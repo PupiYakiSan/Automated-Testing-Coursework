@@ -422,4 +422,103 @@ public class AqaShopTest {
         int actual = buyPage.getCardCodeFromForm().length();
         Assertions.assertEquals(expected, actual);
     }
+
+    // дополнительные позитивные тесты
+    @Test
+    void cardMonthCurrentCurrentMonth() {
+        var mainPage = open("http://localhost:8080", MainPage.class);
+        var buyPage = mainPage.simpleBuy();
+        var cardInfo = DataHelper.getApprovedCardAllForm();
+        buyPage.formCardArbitraryMonthAndYear(cardInfo, DataHelper.getCurrentMonth(), DataHelper.gerCurrentYear());
+        buyPage.findMessageContent("Успешно", "Операция одобрена Банком.");
+    }
+
+    @Test
+    void cardMonthCurrentYearNextMonth() {
+        String currentMonth = DataHelper.getCurrentMonth();
+        String month = "";
+        String year = "";
+        if (currentMonth.equals("12")) {
+            month = "01";
+            year = LocalDate.now().plusYears(1).format(DateTimeFormatter.ofPattern("yy"));
+        } else {
+            month = LocalDate.now().plusMonths(1).format(DateTimeFormatter.ofPattern("MM"));
+            year = DataHelper.gerCurrentYear();
+        }
+        var mainPage = open("http://localhost:8080", MainPage.class);
+        var buyPage = mainPage.simpleBuy();
+        var cardInfo = DataHelper.getApprovedCardAllForm();
+        buyPage.formCardArbitraryMonthAndYear(cardInfo, month, year);
+        buyPage.findMessageContent("Успешно", "Операция одобрена Банком.");
+    }
+
+    @Test
+    void cardOwnerDoubleName() {
+        var mainPage = open("http://localhost:8080", MainPage.class);
+        var buyPage = mainPage.simpleBuy();
+        var cardInfo = DataHelper.getApprovedCardAllForm();
+        buyPage.formCardArbitraryOwner(cardInfo,DataHelper.generateInvalidLatinData(5)
+                + "-" + DataHelper.generateInvalidLatinData(5)
+                + " " + DataHelper.generateInvalidLatinData(8));
+        buyPage.findMessageContent("Успешно", "Операция одобрена Банком.");
+    }
+
+    @Test
+    void cardMonthMin() {
+        var mainPage = open("http://localhost:8080", MainPage.class);
+        var buyPage = mainPage.simpleBuy();
+        var cardInfo = DataHelper.getApprovedCardAllForm();
+        buyPage.formCardArbitraryMonth(cardInfo, "01");
+        buyPage.findMessageContent("Успешно", "Операция одобрена Банком.");
+    }
+
+    @Test
+    void cardMonthMax() {
+        var mainPage = open("http://localhost:8080", MainPage.class);
+        var buyPage = mainPage.simpleBuy();
+        var cardInfo = DataHelper.getApprovedCardAllForm();
+        buyPage.formCardArbitraryMonth(cardInfo, "12");
+        buyPage.findMessageContent("Успешно", "Операция одобрена Банком.");
+    }
+
+    @Test
+    void cardYearPlusFive() {
+        var mainPage = open("http://localhost:8080", MainPage.class);
+        var buyPage = mainPage.simpleBuy();
+        var cardInfo = DataHelper.getApprovedCardAllForm();
+        buyPage.formCardArbitraryYear(cardInfo, LocalDate.now().plusYears(5).format(DateTimeFormatter.ofPattern("yy")));
+        buyPage.findMessageContent("Успешно", "Операция одобрена Банком.");
+    }
+
+    // дополнительные негативные тесты
+    @Test
+    void cardOwnerFirstWhitespace() {
+        var mainPage = open("http://localhost:8080", MainPage.class);
+        var buyPage = mainPage.simpleBuy();
+        var cardInfo = DataHelper.getApprovedCardAllForm();
+        buyPage.formCardArbitraryOwner(cardInfo, " " + DataHelper.generateInvalidLatinData(5)
+                + " " + DataHelper.generateInvalidLatinData(5));
+        buyPage.findMessageError("owner", "Неверный формат");
+    }
+
+    @Test
+    void cardOwnerFirstDash() {
+        var mainPage = open("http://localhost:8080", MainPage.class);
+        var buyPage = mainPage.simpleBuy();
+        var cardInfo = DataHelper.getApprovedCardAllForm();
+        buyPage.formCardArbitraryOwner(cardInfo, "-" + DataHelper.generateInvalidLatinData(5)
+                + " " + DataHelper.generateInvalidLatinData(5));
+        buyPage.findMessageError("owner", "Неверный формат");
+    }
+
+    @Test
+    void cardOwnerManyWhitespace() {
+        var mainPage = open("http://localhost:8080", MainPage.class);
+        var buyPage = mainPage.simpleBuy();
+        var cardInfo = DataHelper.getApprovedCardAllForm();
+        buyPage.formCardArbitraryOwner(cardInfo, DataHelper.generateInvalidLatinData(5)
+                + "     " + DataHelper.generateInvalidLatinData(5));
+        buyPage.findMessageError("owner", "Неверный формат");
+    }
+
 }
