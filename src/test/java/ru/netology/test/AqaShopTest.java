@@ -1,6 +1,10 @@
 package ru.netology.test;
 
+import com.codeborne.selenide.logevents.SelenideLogger;
+import io.qameta.allure.selenide.AllureSelenide;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.netology.data.DataHelper;
 import ru.netology.data.SQLHelper;
@@ -12,6 +16,16 @@ import java.time.format.DateTimeFormatter;
 import static com.codeborne.selenide.Selenide.open;
 
 public class AqaShopTest {
+
+    @BeforeAll
+    static void setupAll() {
+        SelenideLogger.addListener("allure", new AllureSelenide());
+    }
+
+    @AfterAll
+    static void tearDownAll() {
+        SelenideLogger.removeListener("allure");
+    }
 
     @Test
     void successPathApprovedCard() {
@@ -311,7 +325,7 @@ public class AqaShopTest {
     void cardOwnerCyrillic() {
         var mainPage = open("http://localhost:8080", MainPage.class);
         var buyPage = mainPage.simpleBuy();
-        buyPage.fillingOneField("owner", DataHelper.generateInvalidOwnerCyrillic(5,8));
+        buyPage.fillingOneField("owner", DataHelper.generateInvalidOwnerCyrillic(5, 8));
         int expected = 0;
         int actual = buyPage.getCardOwnerFromForm().length();
         Assertions.assertEquals(expected, actual);
@@ -321,7 +335,7 @@ public class AqaShopTest {
     void cardOwnerNumeric() {
         var mainPage = open("http://localhost:8080", MainPage.class);
         var buyPage = mainPage.simpleBuy();
-        buyPage.fillingOneField("owner", DataHelper.generateInvalidOwnerNumeric(5,8));
+        buyPage.fillingOneField("owner", DataHelper.generateInvalidOwnerNumeric(5, 8));
         int expected = 0;
         int actual = buyPage.getCardOwnerFromForm().length();
         Assertions.assertEquals(expected, actual);
@@ -331,7 +345,7 @@ public class AqaShopTest {
     void cardOwnerSymbol() {
         var mainPage = open("http://localhost:8080", MainPage.class);
         var buyPage = mainPage.simpleBuy();
-        buyPage.fillingOneField("owner", DataHelper.generateInvalidOwnerSymbol(5,8));
+        buyPage.fillingOneField("owner", DataHelper.generateInvalidOwnerSymbol(5, 8));
         int expected = 0;
         int actual = buyPage.getCardOwnerFromForm().length();
         Assertions.assertEquals(expected, actual);
@@ -457,7 +471,7 @@ public class AqaShopTest {
         var mainPage = open("http://localhost:8080", MainPage.class);
         var buyPage = mainPage.simpleBuy();
         var cardInfo = DataHelper.getApprovedCardAllForm();
-        buyPage.formCardArbitraryOwner(cardInfo,DataHelper.generateInvalidLatinData(5)
+        buyPage.formCardArbitraryOwner(cardInfo, DataHelper.generateInvalidLatinData(5)
                 + "-" + DataHelper.generateInvalidLatinData(5)
                 + " " + DataHelper.generateInvalidLatinData(8));
         buyPage.findMessageContent("Успешно", "Операция одобрена Банком.");
